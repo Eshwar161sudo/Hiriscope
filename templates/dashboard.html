@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - HiRiscope AI{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1 class="page-title">Welcome back, {{ user_name }}!</h1>
+        <p class="page-subtitle">Track your interview progress and improve your skills</p>
+    </div>
+    
+    <div class="stats-grid">
+        <div class="stat-card glass-card">
+            <div class="stat-icon">🎙️</div>
+            <div class="stat-content">
+                <span class="stat-value">{{ total_interviews }}</span>
+                <span class="stat-label">Total Interviews</span>
+            </div>
+        </div>
+        
+        <div class="stat-card glass-card">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-content">
+                <span class="stat-value">{{ best_score }}%</span>
+                <span class="stat-label">Best Score</span>
+            </div>
+        </div>
+        
+        <div class="stat-card glass-card">
+            <div class="stat-icon">📈</div>
+            <div class="stat-content">
+                <span class="stat-value">{{ avg_score }}%</span>
+                <span class="stat-label">Average Score</span>
+            </div>
+        </div>
+        
+        <div class="stat-card glass-card">
+            <div class="stat-icon">📅</div>
+            <div class="stat-content">
+                <span class="stat-value">{{ recent_interviews|length }}</span>
+                <span class="stat-label">Recent Sessions</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="action-buttons">
+        <a href="{{ url_for('interview') }}" class="action-btn primary">
+            <span class="action-icon">🎙️</span>
+            <span class="action-text">Start Interview</span>
+            <span class="action-glow"></span>
+        </a>
+        
+        <button class="action-btn secondary" onclick="openResumeModal()">
+            <span class="action-icon">📄</span>
+            <span class="action-text">Resume Analysis</span>
+            <span class="action-glow"></span>
+        </button>
+        
+        <a href="{{ url_for('history') }}" class="action-btn tertiary">
+            <span class="action-icon">📜</span>
+            <span class="action-text">Interview History</span>
+            <span class="action-glow"></span>
+        </a>
+    </div>
+    
+    <div class="dashboard-grid">
+        <div class="chart-card glass-card">
+            <h3 class="card-title">Performance Trend</h3>
+            <div class="chart-container">
+                <canvas id="scoreChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="recent-card glass-card">
+            <h3 class="card-title">Recent Interviews</h3>
+            <div class="recent-list">
+                {% if recent_interviews %}
+                    {% for interview in recent_interviews %}
+                    <div class="recent-item">
+                        <div class="recent-date">{{ interview.date.strftime('%b %d, %Y') }}</div>
+                        <div class="recent-score score-{{ 'high' if interview.score >= 75 else 'medium' if interview.score >= 50 else 'low' }}">
+                            {{ interview.score }}%
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <span class="empty-icon">📝</span>
+                        <p>No interviews yet. Start your first one!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    {% if latest_resume %}
+    <div class="resume-summary glass-card">
+        <h3 class="card-title">Latest Resume Analysis</h3>
+        <div class="resume-stats">
+            <div class="resume-stat">
+                <span class="resume-stat-value">{{ latest_resume.score }}%</span>
+                <span class="resume-stat-label">Resume Score</span>
+            </div>
+            <div class="resume-stat">
+                <span class="resume-stat-value">{{ latest_resume.experience_years }}</span>
+                <span class="resume-stat-label">Years Experience</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div id="resumeModal" class="modal">
+    <div class="modal-content glass-card">
+        <div class="modal-header">
+            <h2 class="modal-title">Resume Analysis</h2>
+            <button class="modal-close" onclick="closeResumeModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <form id="resumeForm" enctype="multipart/form-data">
+                <div class="upload-zone" id="uploadZone">
+                    <span class="upload-icon">📄</span>
+                    <p class="upload-text">Drag & drop your resume here</p>
+                    <p class="upload-subtext">or click to browse (PDF, DOCX)</p>
+                    <input type="file" id="resumeFile" name="resume" accept=".pdf,.docx" hidden>
+                </div>
+                <div id="fileInfo" class="file-info hidden"></div>
+                <button type="submit" class="btn btn-primary btn-full" id="analyzeBtn" disabled>
+                    <span class="btn-text">Analyze Resume</span>
+                    <span class="btn-loader hidden"></span>
+                </button>
+            </form>
+            <div id="resumeResults" class="resume-results hidden"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const chartData = {{ chart_data|safe }};
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        if (chartData.labels.length > 0) {
+            const ctx = document.getElementById('scoreChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: 'Score',
+                        data: chartData.scores,
+                        borderColor: '#00f5ff',
+                        backgroundColor: 'rgba(0, 245, 255, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#00f5ff',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

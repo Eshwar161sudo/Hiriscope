@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Interview - HiRiscope AI{% endblock %}
+
+{% block content %}
+<div class="interview-container">
+    <div class="interview-header">
+        <h1 class="page-title">Interview Practice</h1>
+        <div class="interview-controls">
+            <button class="btn btn-secondary" id="newQuestionBtn">
+                <span>🔄</span> New Question
+            </button>
+            <button class="btn btn-primary" id="finishBtn" disabled>
+                <span>✓</span> Finish Session
+            </button>
+        </div>
+    </div>
+    
+    <div class="interview-grid">
+        <div class="video-section glass-card">
+            <div class="video-header">
+                <span class="video-title">📹 Camera Feed</span>
+                <div class="video-status" id="cameraStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Initializing...</span>
+                </div>
+            </div>
+            <div class="video-container">
+                <video id="camera-feed" autoplay playsinline muted></video>
+                <canvas id="captureCanvas" hidden></canvas>
+                <div class="video-overlay" id="videoOverlay">
+                    <span class="overlay-icon">📷</span>
+                    <p>Click to enable camera</p>
+                </div>
+            </div>
+            
+            <div class="emotion-display">
+                <h4 class="emotion-title">Real-time Emotion Analysis</h4>
+                <div class="emotion-bars">
+                    <div class="emotion-bar">
+                        <span class="emotion-label">😊 Confident</span>
+                        <div class="emotion-progress">
+                            <div class="emotion-fill" id="confidentBar" style="width: 0%"></div>
+                        </div>
+                        <span class="emotion-value" id="confidentValue">0%</span>
+                    </div>
+                    <div class="emotion-bar">
+                        <span class="emotion-label">😄 Happy</span>
+                        <div class="emotion-progress">
+                            <div class="emotion-fill" id="happyBar" style="width: 0%"></div>
+                        </div>
+                        <span class="emotion-value" id="happyValue">0%</span>
+                    </div>
+                    <div class="emotion-bar">
+                        <span class="emotion-label">😐 Neutral</span>
+                        <div class="emotion-progress">
+                            <div class="emotion-fill" id="neutralBar" style="width: 0%"></div>
+                        </div>
+                        <span class="emotion-value" id="neutralValue">0%</span>
+                    </div>
+                    <div class="emotion-bar">
+                        <span class="emotion-label">😰 Nervous</span>
+                        <div class="emotion-progress">
+                            <div class="emotion-fill" id="nervousBar" style="width: 0%"></div>
+                        </div>
+                        <span class="emotion-value" id="nervousValue">0%</span>
+                    </div>
+                </div>
+                <div class="current-emotion" id="currentEmotion">
+                    <span class="emotion-icon">😊</span>
+                    <span class="emotion-text">Waiting for analysis...</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="interview-panel">
+            <div class="question-card glass-card">
+                <div class="question-header">
+                    <span class="question-badge">Question</span>
+                    <span class="question-number" id="questionNumber">#1</span>
+                </div>
+                <p class="question-text" id="questionText">Click "New Question" to start your interview practice.</p>
+            </div>
+            
+            <div class="recording-section glass-card">
+                <div class="recording-header">
+                    <span class="recording-title">🎙️ Voice Recording</span>
+                    <div class="recording-timer" id="recordingTimer">00:00</div>
+                </div>
+                
+                <div class="recording-controls">
+                    <button class="record-btn" id="recordBtn">
+                        <span class="record-icon">🎤</span>
+                        <span class="record-text">Start Recording</span>
+                    </button>
+                    <div class="recording-status" id="recordingStatus">
+                        <span class="status-indicator"></span>
+                        <span class="status-message">Ready to record</span>
+                    </div>
+                </div>
+                
+                <div class="transcript-box">
+                    <label class="transcript-label">Live Transcript</label>
+                    <div class="transcript-content" id="transcriptBox">
+                        Your speech will appear here in real-time...
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary btn-full" id="submitAnswerBtn" disabled>
+                    <span class="btn-text">Submit Answer</span>
+                    <span class="btn-loader hidden"></span>
+                </button>
+            </div>
+            
+            <div class="feedback-card glass-card hidden" id="feedbackCard">
+                <div class="feedback-header">
+                    <span class="feedback-title">📊 Performance Feedback</span>
+                </div>
+                <div class="score-display">
+                    <div class="score-circle" id="scoreCircle">
+                        <svg viewBox="0 0 100 100">
+                            <circle class="score-bg" cx="50" cy="50" r="45"></circle>
+                            <circle class="score-progress" cx="50" cy="50" r="45" id="scoreProgress"></circle>
+                        </svg>
+                        <span class="score-value" id="scoreValue">0</span>
+                    </div>
+                </div>
+                <div class="feedback-details">
+                    <p class="feedback-text" id="feedbackText"></p>
+                    <div class="score-breakdown">
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">Semantic Score</span>
+                            <span class="breakdown-value" id="semanticScore">--</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="breakdown-label">Voice Confidence</span>
+                            <span class="breakdown-value" id="voiceScore">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    initInterview();
+</script>
+{% endblock %}

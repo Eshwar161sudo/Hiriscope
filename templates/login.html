@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Login - HiRiscope AI{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card glass-card">
+        <div class="auth-header">
+            <div class="auth-logo">
+                <span class="logo-icon-large">🎯</span>
+            </div>
+            <h1 class="auth-title">HiRiscope AI</h1>
+            <p class="auth-subtitle">Rooman Edition</p>
+        </div>
+        
+        <form class="auth-form" method="POST" action="{{ url_for('login') }}">
+            <div class="form-group">
+                <label for="email" class="form-label">Email Address</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">📧</span>
+                    <input type="email" id="email" name="email" class="form-input" placeholder="Enter your email" required autocomplete="email">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" id="password" name="password" class="form-input" placeholder="Enter your password" required autocomplete="current-password">
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-full">
+                <span class="btn-text">Sign In</span>
+                <span class="btn-icon">→</span>
+            </button>
+        </form>
+        
+        <div class="auth-footer">
+            <p>Don't have an account? <a href="{{ url_for('register') }}" class="auth-link">Create one</a></p>
+        </div>
+    </div>
+    
+    <div class="floating-elements">
+        <div class="floating-icon" style="--delay: 0s; --x: 10%; --y: 20%;">💼</div>
+        <div class="floating-icon" style="--delay: 1s; --x: 85%; --y: 15%;">🎓</div>
+        <div class="floating-icon" style="--delay: 2s; --x: 15%; --y: 75%;">🚀</div>
+        <div class="floating-icon" style="--delay: 3s; --x: 80%; --y: 70%;">⭐</div>
+        <div class="floating-icon" style="--delay: 4s; --x: 50%; --y: 85%;">🎯</div>
+    </div>
+</div>
+{% endblock %}

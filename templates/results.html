@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}Results - HiRiscope AI{% endblock %}
+
+{% block content %}
+<div class="results-container">
+    {% if interview %}
+    <div class="results-header">
+        <h1 class="page-title">Interview Results</h1>
+        <p class="page-subtitle">{{ interview.date.strftime('%B %d, %Y at %I:%M %p') }}</p>
+    </div>
+    
+    <div class="results-grid">
+        <div class="score-card glass-card">
+            <div class="final-score">
+                <div class="medal-animation" id="medalAnimation">
+                    {% if interview.score >= 85 %}
+                    <span class="medal gold">🏆</span>
+                    {% elif interview.score >= 70 %}
+                    <span class="medal silver">🥈</span>
+                    {% elif interview.score >= 50 %}
+                    <span class="medal bronze">🥉</span>
+                    {% else %}
+                    <span class="medal try-again">💪</span>
+                    {% endif %}
+                </div>
+                <div class="score-circle-large">
+                    <svg viewBox="0 0 100 100">
+                        <circle class="score-bg" cx="50" cy="50" r="45"></circle>
+                        <circle class="score-progress" cx="50" cy="50" r="45" id="finalScoreProgress"></circle>
+                    </svg>
+                    <span class="score-value-large" id="finalScoreValue">{{ interview.score }}</span>
+                </div>
+                <h2 class="score-label">
+                    {% if interview.score >= 85 %}Excellent Performance!
+                    {% elif interview.score >= 70 %}Great Job!
+                    {% elif interview.score >= 50 %}Good Effort!
+                    {% else %}Keep Practicing!
+                    {% endif %}
+                </h2>
+            </div>
+        </div>
+        
+        <div class="details-card glass-card">
+            <h3 class="card-title">Session Details</h3>
+            
+            <div class="detail-section">
+                <h4 class="detail-label">Question Asked:</h4>
+                <p class="detail-text">{{ interview.question }}</p>
+            </div>
+            
+            {% if interview.answer %}
+            <div class="detail-section">
+                <h4 class="detail-label">Your Response:</h4>
+                <div class="transcript-display">
+                    <p>{{ interview.answer }}</p>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if interview.feedback %}
+            <div class="detail-section">
+                <h4 class="detail-label">Feedback:</h4>
+                <p class="feedback-display">{{ interview.feedback }}</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="emotion-card glass-card">
+            <h3 class="card-title">Emotion Distribution</h3>
+            <div class="chart-container">
+                <canvas id="emotionChart"></canvas>
+            </div>
+            {% if interview.emotion %}
+            <div class="dominant-emotion">
+                <span class="emotion-label">Primary Emotion:</span>
+                <span class="emotion-badge emotion-{{ interview.emotion }}">
+                    {% if interview.emotion == 'confident' %}😊{% elif interview.emotion == 'happy' %}😄{% elif interview.emotion == 'neutral' %}😐{% else %}😰{% endif %}
+                    {{ interview.emotion|capitalize }}
+                </span>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="performance-card glass-card">
+            <h3 class="card-title">Performance Breakdown</h3>
+            <div class="performance-metrics">
+                <div class="metric">
+                    <div class="metric-header">
+                        <span class="metric-icon">📝</span>
+                        <span class="metric-name">Content Quality</span>
+                    </div>
+                    <div class="metric-bar">
+                        <div class="metric-fill" style="width: {{ interview.score }}%"></div>
+                    </div>
+                    <span class="metric-value">{{ interview.score }}%</span>
+                </div>
+                
+                <div class="metric">
+                    <div class="metric-header">
+                        <span class="metric-icon">🎙️</span>
+                        <span class="metric-name">Voice Confidence</span>
+                    </div>
+                    <div class="metric-bar">
+                        <div class="metric-fill" style="width: {{ (interview.score * 0.9 + 10)|int }}%"></div>
+                    </div>
+                    <span class="metric-value">{{ (interview.score * 0.9 + 10)|int }}%</span>
+                </div>
+                
+                <div class="metric">
+                    <div class="metric-header">
+                        <span class="metric-icon">🎯</span>
+                        <span class="metric-name">Relevance</span>
+                    </div>
+                    <div class="metric-bar">
+                        <div class="metric-fill" style="width: {{ (interview.score * 0.85 + 15)|int }}%"></div>
+                    </div>
+                    <span class="metric-value">{{ (interview.score * 0.85 + 15)|int }}%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="results-actions">
+        <a href="{{ url_for('interview') }}" class="btn btn-primary">
+            <span>🎙️</span> Practice Again
+        </a>
+        <a href="{{ url_for('history') }}" class="btn btn-secondary">
+            <span>📜</span> View All History
+        </a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-tertiary">
+            <span>📊</span> Back to Dashboard
+        </a>
+    </div>
+    
+    {% else %}
+    <div class="empty-state-large glass-card">
+        <span class="empty-icon-large">📊</span>
+        <h2>No Results Available</h2>
+        <p>Complete an interview session to see your results here.</p>
+        <a href="{{ url_for('interview') }}" class="btn btn-primary">
+            <span>🎙️</span> Start Interview
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if interview %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const emotionData = {{ emotion_data|safe }};
+        
+        const ctx = document.getElementById('emotionChart').getContext('2d');
+        
+        const labels = Object.keys(emotionData).length > 0 ? Object.keys(emotionData) : ['confident', 'happy', 'neutral', 'nervous'];
+        const data = Object.keys(emotionData).length > 0 ? Object.values(emotionData) : [1, 1, 1, 1];
+        
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels.map(l => l.charAt(0).toUpperCase() + l.slice(1)),
+                datasets: [{
+                    data: data,
+                    backgroundColor: [
+                        'rgba(0, 245, 255, 0.8)',
+                        'rgba(0, 255, 136, 0.8)',
+                        'rgba(255, 193, 7, 0.8)',
+                        'rgba(255, 82, 82, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(0, 245, 255, 1)',
+                        'rgba(0, 255, 136, 1)',
+                        'rgba(255, 193, 7, 1)',
+                        'rgba(255, 82, 82, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.8)',
+                            padding: 15
+                        }
+                    }
+                }
+            }
+        });
+        
+        const scoreValue = {{ interview.score }};
+        const progressCircle = document.getElementById('finalScoreProgress');
+        const circumference = 2 * Math.PI * 45;
+        progressCircle.style.strokeDasharray = circumference;
+        progressCircle.style.strokeDashoffset = circumference - (scoreValue / 100) * circumference;
+        
+        const medal = document.querySelector('.medal');
+        if (medal) {
+            medal.classList.add('animate');
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}

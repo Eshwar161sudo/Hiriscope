@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HiRiscope AI{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="background-animation"></div>
+    
+    <div id="toast-container"></div>
+    
+    {% if session.get('user_id') %}
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="logo-icon">🎯</span>
+            <span class="logo-text">HiRiscope AI</span>
+        </div>
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                <span class="nav-icon">📊</span> Dashboard
+            </a>
+            <a href="{{ url_for('interview') }}" class="nav-link {% if request.endpoint == 'interview' %}active{% endif %}">
+                <span class="nav-icon">🎙️</span> Interview
+            </a>
+            <a href="{{ url_for('history') }}" class="nav-link {% if request.endpoint == 'history' %}active{% endif %}">
+                <span class="nav-icon">📜</span> History
+            </a>
+            <a href="{{ url_for('logout') }}" class="nav-link logout-link">
+                <span class="nav-icon">🚪</span> Logout
+            </a>
+        </div>
+        <div class="nav-user">
+            <span class="user-avatar">{{ user_name[0] if user_name else 'U' }}</span>
+            <span class="user-name">{{ user_name }}</span>
+        </div>
+    </nav>
+    {% endif %}
+    
+    <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                        <button class="flash-close" onclick="this.parentElement.remove()">×</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+    
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
