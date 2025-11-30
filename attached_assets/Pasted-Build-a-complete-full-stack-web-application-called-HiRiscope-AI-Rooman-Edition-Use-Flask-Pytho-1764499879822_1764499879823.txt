@@ -1,0 +1,356 @@
+Build a complete full-stack web application called “HiRiscope AI – Rooman Edition”.
+Use Flask (Python) with Jinja2 templates, SQLite database, and plain HTML/CSS/JS frontend.
+Make the UI modern, futuristic, and glass-morphism styled.
+Ensure ALL features below are implemented and fully working end-to-end.
+
+🚀 1. PROJECT STRUCTURE
+
+Create this exact folder structure:
+
+/app.py
+/database/hiriscope.db
+/templates/base.html
+/templates/login.html
+/templates/register.html
+/templates/dashboard.html
+/templates/interview.html
+/templates/history.html
+/templates/results.html
+/static/css/style.css
+/static/js/main.js
+/utils.py
+
+🔐 2. AUTHENTICATION SYSTEM
+
+Implement:
+
+Sign Up
+
+Fields:
+
+name
+
+email
+
+password (hashed)
+
+Login
+
+email
+
+password check (hashed)
+
+Session management
+
+Use Flask session:
+
+session["user_id"]
+
+redirect unauthorized users to login
+
+🗄 3. DATABASE (SQLite: hiriscope.db)
+
+Create tables:
+
+users
+
+| id | name | email | password |
+
+interviews
+
+| id | user_id | question | answer | score | emotion | date |
+
+emotion_logs
+
+| id | user_id | emotion | confidence | date |
+
+resume_analysis
+
+| id | user_id | score | skills | experience_years | suggestions | date |
+
+Add sample data only if needed for testing.
+📊 4. DASHBOARD FEATURES
+
+Dashboard must display:
+
+✔ total interviews
+✔ best score
+✔ average score
+✔ list of previous interview dates
+✔ line chart (Chart.js) showing previous interview scores
+✔ 3 main action buttons:
+
+Start Interview
+
+Resume Analysis
+
+Interview History
+
+🎙 5. INTERVIEW PAGE FUNCTIONALITY
+
+The interview page must support:
+
+A. CAMERA FEED
+
+Using:
+
+navigator.mediaDevices.getUserMedia({ video: true })
+
+
+Show video in <video id="camera-feed">.
+
+B. EMOTION ANALYSIS (Backend API)
+
+Every 2 seconds, capture current frame:
+
+Frontend sends:
+
+POST /process_emotion
+{
+   "image": "base64_jpeg"
+}
+
+
+Backend returns:
+
+{
+  "emotion": "happy / neutral / nervous / confident",
+  "confidence": 78
+}
+
+
+Update UI emotion bars in live-time.
+
+C. MICROPHONE + SPEECH-TO-TEXT
+
+Use Web Speech API:
+
+SpeechRecognition()
+
+
+Show text live in transcript box.
+
+Auto-stop after 30 seconds.
+
+D. SUBMIT ANSWER
+
+After speech stops:
+
+Frontend sends:
+
+POST /submit_answer
+{
+   "question": "...",
+   "answer": "transcript text"
+}
+
+
+Backend must:
+
+analyze answer (use simple scoring logic in utils.py)
+
+calculate semantic similarity
+
+calculate voice confidence score (random / formula)
+
+store result in database
+
+send back:
+
+{
+   "score": 82,
+   "feedback": "Your answer was clear. Improve structure."
+}
+
+
+User sees feedback card + score circle.
+
+E. NEXT QUESTION
+
+API:
+
+GET /api/get_question
+{
+   "question": "Tell me about yourself"
+}
+
+
+Use a pool of 50+ common interview questions.
+
+📝 6. RESUME ANALYSIS
+
+Create upload form in Dashboard modal:
+
+User uploads .pdf or .docx.
+
+API:
+
+POST /upload_resume
+
+
+Backend (in utils.py):
+
+extract text from PDF/DOCX
+
+detect skills
+
+detect years of experience
+
+generate suggestions
+
+compute resume score
+
+Return:
+
+{
+  "score": 78,
+  "skills": ["Python", "Machine Learning"],
+  "experience_years": 2,
+  "suggestions": ["Add more project details", "Improve summary section"]
+}
+
+
+Also store this in the resume_analysis table.
+
+📜 7. HISTORY PAGE
+
+Show list of all past interviews:
+
+date
+
+question
+
+score
+
+emotion summary
+
+button to view full details
+
+🧠 8. RESULTS PAGE
+
+After finishing interview:
+
+Show:
+
+final score
+
+medal animation
+
+emotion distribution chart
+
+transcript summary
+
+performance details
+
+🎨 9. FRONTEND REQUIREMENTS
+
+Use:
+
+responsive layout
+
+glass effect cards
+
+neon glow effects
+
+Orbitron + Inter fonts
+
+animated gradient background
+
+floating icons
+
+modal animations
+
+toast notification system
+
+🔧 10. UTILS.PY LOGIC
+
+Implement:
+
+extract_text_from_resume(file)
+
+Use PyPDF2 / python-docx.
+
+generate_questions_from_text(text)
+
+(optional simple keyword mapping)
+
+transcribe_audio_file()
+
+(Not needed since we use browser recognition)
+
+compute_semantic_score(answer, question)
+
+Use embeddings or a simple keyword match.
+
+voice_confidence_score()
+
+Return a number 60–95.
+
+analyze_image_emotion(image)
+
+Return random but realistic emotions:
+
+confident
+
+nervous
+
+neutral
+
+happy
+
+fuse_scores()
+
+Combine:
+
+semantic score
+
+voice confidence
+
+emotion stability
+
+🎯 11. IMPORTANT BACKEND REQUIREMENTS
+
+All routes must be implemented.
+
+Login required for all pages except login/signup.
+
+Return proper JSON responses.
+
+Use try/except to avoid server crashes.
+
+Work on both:
+
+http://127.0.0.1:5000
+
+http://localhost:5000
+
+🔥 12. FINAL OUTPUT FROM RELIT AI
+
+Relit AI must generate:
+
+✔ full backend code
+✔ all HTML templates
+✔ full CSS file (same style throughout)
+✔ full JavaScript file
+✔ database creation code
+✔ complete utils.py
+✔ instructions on running:
+
+pip install -r requirements.txt
+python app.py
+
+
+✔ ensure camera + mic + emotion + STT works
+✔ ensure dashboard statistics update after every interview
+
+🎁 BONUS REQUIREMENTS (DO NOT SKIP)
+
+Fix CORS issues
+
+Fix MIME loading issues
+
+Ensure TLS is not required (work on local HTTP)
+
+Auto-create database if not present
+
+Make UI look exactly like a premium AI dashboard
