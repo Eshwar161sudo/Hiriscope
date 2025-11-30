@@ -3,71 +3,25 @@
 {% block title %}History - HiRiscope AI{% endblock %}
 
 {% block content %}
-<div class="history-container">
-    <div class="history-header">
-        <h1 class="page-title">Interview History</h1>
-        <p class="page-subtitle">Review your past interview sessions and track progress</p>
-    </div>
-    
-    {% if interviews %}
-    <div class="history-grid">
-        {% for interview in interviews %}
-        <div class="history-card glass-card">
-            <div class="history-card-header">
-                <span class="history-date">{{ interview.date.strftime('%B %d, %Y at %I:%M %p') }}</span>
-                <span class="history-score score-{{ 'high' if interview.score >= 75 else 'medium' if interview.score >= 50 else 'low' }}">
-                    {{ interview.score }}%
-                </span>
+<div class="history-container glass-card">
+    <h1 class="page-title">Interview History</h1>
+
+    {% if history %}
+        <div class="history-list">
+            {% for item in history %}
+            <div class="history-item">
+                <div class="history-date">{{ item.date }}</div>
+                <div class="history-question">{{ item.question }}</div>
+                <div class="history-score">Score: {{ item.score }}%</div>
+                <a href="{{ url_for('results', interview_id=item.id) }}" class="history-view">View Details →</a>
             </div>
-            
-            <div class="history-card-body">
-                <div class="history-question">
-                    <span class="history-label">Question:</span>
-                    <p>{{ interview.question }}</p>
-                </div>
-                
-                {% if interview.answer %}
-                <div class="history-answer">
-                    <span class="history-label">Your Answer:</span>
-                    <p>{{ interview.answer[:200] }}{% if interview.answer|length > 200 %}...{% endif %}</p>
-                </div>
-                {% endif %}
-                
-                {% if interview.emotion %}
-                <div class="history-emotion">
-                    <span class="history-label">Detected Emotion:</span>
-                    <span class="emotion-badge emotion-{{ interview.emotion }}">
-                        {% if interview.emotion == 'confident' %}😊{% elif interview.emotion == 'happy' %}😄{% elif interview.emotion == 'neutral' %}😐{% else %}😰{% endif %}
-                        {{ interview.emotion|capitalize }}
-                    </span>
-                </div>
-                {% endif %}
-                
-                {% if interview.feedback %}
-                <div class="history-feedback">
-                    <span class="history-label">Feedback:</span>
-                    <p>{{ interview.feedback }}</p>
-                </div>
-                {% endif %}
-            </div>
-            
-            <div class="history-card-footer">
-                <a href="{{ url_for('results', id=interview.id) }}" class="btn btn-secondary btn-sm">
-                    View Details →
-                </a>
-            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
     {% else %}
-    <div class="empty-state-large glass-card">
-        <span class="empty-icon-large">📝</span>
-        <h2>No Interview History Yet</h2>
-        <p>Start your first interview practice session to see your history here.</p>
-        <a href="{{ url_for('interview') }}" class="btn btn-primary">
-            <span>🎙️</span> Start Interview
-        </a>
-    </div>
+        <div class="empty-state">
+            <span class="empty-icon">📄</span>
+            <p>No interviews yet.</p>
+        </div>
     {% endif %}
 </div>
 {% endblock %}

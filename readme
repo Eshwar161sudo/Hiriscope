@@ -1,0 +1,200 @@
+🧠 HiRiscope AI – Intelligent Interview Practice System
+
+A web-based AI-powered interview training platform with real-time emotion analysis, voice evaluation, semantic scoring, and resume analysis.
+
+🚀 Features
+🎤 AI Interview Simulation
+
+Auto-generated interview questions
+
+Voice recording with speech-to-text
+
+Real-time transcript
+
+Semantic similarity scoring
+
+Voice confidence scoring
+
+Final combined interview performance score
+
+Personalized feedback & tips
+
+📷 Real-Time Emotion Detection
+
+Continuous emotion prediction from video
+
+Tracks confidence, happiness, neutrality & nervousness
+
+Emotion logs stored per interview
+
+Beautiful charts in results page
+
+📄 Resume Analysis
+
+Extract text from PDF/DOCX
+
+Detect skills
+
+Estimate years of experience
+
+Generate improvement suggestions
+
+Resume scoring system
+
+📊 Dashboard & History
+
+Performance trend graph
+
+Recent interview sessions
+
+Previous resume analysis reports
+
+Full interview history
+
+🏗️ Tech Stack
+Layer	Technologies
+Frontend	HTML, CSS (Glassmorphism), JavaScript, Chart.js
+Backend	Python, Flask
+AI Logic	Custom scoring algorithms (semantic, voice, emotion)
+Database	SQLite
+File Parsing	PyPDF2, python-docx
+📁 Project Structure
+HiRiscopeAI/
+│── app.py
+│── utils.py
+│── README.md
+│── database/
+│     └── app.db
+│
+│── templates/
+│     ├── base.html
+│     ├── login.html
+│     ├── register.html
+│     ├── dashboard.html
+│     ├── interview.html
+│     ├── results.html
+│     └── history.html
+│
+│── static/
+      ├── css/
+      │     └── style.css
+      ├── js/
+      │     └── main.js
+      ├── images/
+      └── favicon.svg
+
+⚙️ Installation & Setup
+1️⃣ Create virtual environment
+python -m venv venv
+
+
+Activate it:
+
+Windows:
+
+venv\Scripts\activate
+
+
+Mac/Linux:
+
+source venv/bin/activate
+
+2️⃣ Install dependencies
+pip install flask PyPDF2 python-docx
+
+
+(These are the only required packages.
+No psycopg2, no heavy libraries.)
+
+3️⃣ Run the app
+python app.py
+
+
+Server starts at:
+
+👉 http://127.0.0.1:5000
+
+🔐 Authentication
+
+Secure registration
+
+Password hashing
+
+Session-based login
+
+Protected routes (dashboard, interview, history, etc.)
+
+🧠 AI Scoring System
+📝 Semantic Score
+
+Extracts:
+
+Keywords
+
+Length of answer
+
+Connector words
+
+Structure quality
+
+Scores 0–100
+
+🔊 Voice Confidence Score
+
+Simulated voice confidence
+(Replace with ML model later)
+
+😀 Emotion Score
+
+Uses real-time webcam frames → simulated emotion classifier.
+
+🔗 Final Score Fusion
+final_score = (
+    semantic_score*0.5
+    + voice_score*0.3
+    + emotion_confidence*0.2
+) + emotion_modifier
+
+📈 Dashboard Analytics
+
+Total interviews
+
+Best score
+
+Average score
+
+Trend line graph
+
+Resume summary
+
+🎯 Future Enhancements
+
+Real ML models for emotion detection
+
+Real speech-to-text (Google/Whisper)
+
+Detailed resume keyword heatmap
+
+Multi-round interview support
+
+Mock HR personality scoring
+
+🤝 Contributions
+
+Feel free to submit PRs for improvements like:
+
+Better NLP models
+
+Improved UI animations
+
+Database standardization
+
+🛡️ License
+
+This project is licensed under the MIT License.
+
+👨‍💻 Author
+
+Eshwar S
+AI & ML Engineer
+Creator of HiRiscope AI
