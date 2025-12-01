@@ -20,24 +20,24 @@ const emotionEmojis = {
 function showToast(message, type = 'info') {
     const container = document.getElementById('toast-container');
     if (!container) return;
-    
+
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    
+
     const icons = {
         success: '✓',
         error: '✗',
         info: 'ℹ',
         warning: '⚠'
     };
-    
+
     toast.innerHTML = `
         <span class="toast-icon">${icons[type] || icons.info}</span>
         <span class="toast-message">${message}</span>
     `;
-    
+
     container.appendChild(toast);
-    
+
     setTimeout(() => {
         toast.style.animation = 'slideIn 0.3s ease reverse';
         setTimeout(() => toast.remove(), 300);
@@ -66,20 +66,20 @@ function initResumeUpload() {
     const analyzeBtn = document.getElementById('analyzeBtn');
     const resumeForm = document.getElementById('resumeForm');
     const resultsDiv = document.getElementById('resumeResults');
-    
+
     if (!uploadZone || !fileInput) return;
-    
+
     uploadZone.onclick = () => fileInput.click();
-    
+
     uploadZone.ondragover = (e) => {
         e.preventDefault();
         uploadZone.classList.add('dragover');
     };
-    
+
     uploadZone.ondragleave = () => {
         uploadZone.classList.remove('dragover');
     };
-    
+
     uploadZone.ondrop = (e) => {
         e.preventDefault();
         uploadZone.classList.remove('dragover');
@@ -88,53 +88,53 @@ function initResumeUpload() {
             handleFile(files[0]);
         }
     };
-    
+
     fileInput.onchange = () => {
         if (fileInput.files.length > 0) {
             handleFile(fileInput.files[0]);
         }
     };
-    
+
     function handleFile(file) {
         const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
         if (!validTypes.includes(file.type) && !file.name.endsWith('.pdf') && !file.name.endsWith('.docx')) {
             showToast('Please upload a PDF or DOCX file', 'error');
             return;
         }
-        
+
         fileInfo.innerHTML = `📄 ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
         fileInfo.classList.remove('hidden');
         analyzeBtn.disabled = false;
         resultsDiv.classList.add('hidden');
     }
-    
+
     resumeForm.onsubmit = async (e) => {
         e.preventDefault();
-        
+
         const file = fileInput.files[0];
         if (!file) {
             showToast('Please select a file first', 'error');
             return;
         }
-        
+
         const btnText = analyzeBtn.querySelector('.btn-text');
         const btnLoader = analyzeBtn.querySelector('.btn-loader');
-        
+
         btnText.textContent = 'Analyzing...';
         btnLoader.classList.remove('hidden');
         analyzeBtn.disabled = true;
-        
+
         const formData = new FormData();
         formData.append('resume', file);
-        
+
         try {
             const response = await fetch('/upload_resume', {
                 method: 'POST',
                 body: formData
             });
-            
+
             const data = await response.json();
-            
+
             if (data.success) {
                 displayResumeResults(data);
                 showToast('Resume analyzed successfully!', 'success');
@@ -155,7 +155,7 @@ function initResumeUpload() {
 function displayResumeResults(data) {
     const resultsDiv = document.getElementById('resumeResults');
     if (!resultsDiv) return;
-    
+
     resultsDiv.innerHTML = `
         <div class="result-score">
             <div class="result-score-value">${data.score}%</div>
@@ -181,7 +181,7 @@ function displayResumeResults(data) {
             </ul>
         </div>
     `;
-    
+
     resultsDiv.classList.remove('hidden');
 }
 
@@ -196,25 +196,25 @@ async function initCamera() {
     const overlay = document.getElementById('videoOverlay');
     const statusDot = document.querySelector('.video-status .status-dot');
     const statusText = document.querySelector('.video-status .status-text');
-    
+
     if (!video) return;
-    
+
     overlay.onclick = startCamera;
-    
+
     async function startCamera() {
         try {
-            mediaStream = await navigator.mediaDevices.getUserMedia({ 
+            mediaStream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: 'user', width: 640, height: 480 },
-                audio: false 
+                audio: false
             });
-            
+
             video.srcObject = mediaStream;
             overlay.classList.add('hidden');
             statusDot.classList.add('active');
             statusText.textContent = 'Camera Active';
-            
+
             startEmotionAnalysis();
-            
+
             showToast('Camera enabled successfully', 'success');
         } catch (error) {
             console.error('Camera error:', error);
@@ -228,34 +228,34 @@ function startEmotionAnalysis() {
     if (emotionInterval) {
         clearInterval(emotionInterval);
     }
-    
+
     emotionInterval = setInterval(captureAndAnalyzeEmotion, 2000);
 }
 
 async function captureAndAnalyzeEmotion() {
     const video = document.getElementById('camera-feed');
     const canvas = document.getElementById('captureCanvas');
-    
+
     if (!video || !canvas || !mediaStream) return;
-    
+
     const ctx = canvas.getContext('2d');
     canvas.width = video.videoWidth || 640;
     canvas.height = video.videoHeight || 480;
-    
+
     ctx.drawImage(video, 0, 0);
-    
+
     const imageData = canvas.toDataURL('image/jpeg', 0.8);
-    
+
     try {
         const response = await fetch('/process_emotion', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 image: imageData,
                 interview_id: currentInterviewId
             })
         });
-        
+
         const data = await response.json();
         updateEmotionDisplay(data);
     } catch (error) {
@@ -265,21 +265,21 @@ async function captureAndAnalyzeEmotion() {
 
 function updateEmotionDisplay(data) {
     const emotions = ['confident', 'happy', 'neutral', 'nervous'];
-    
+
     currentEmotion = data.emotion;
     currentEmotionConfidence = data.confidence;
-    
+
     emotions.forEach(emotion => {
         const bar = document.getElementById(`${emotion}Bar`);
         const value = document.getElementById(`${emotion}Value`);
-        
+
         if (bar && value) {
             const percent = emotion === data.emotion ? data.confidence : Math.random() * 30;
             bar.style.width = `${percent}%`;
             value.textContent = `${Math.round(percent)}%`;
         }
     });
-    
+
     const currentEmotionDiv = document.getElementById('currentEmotion');
     if (currentEmotionDiv) {
         currentEmotionDiv.innerHTML = `
@@ -291,36 +291,40 @@ function updateEmotionDisplay(data) {
 
 function initSpeechRecognition() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    
+
     if (!SpeechRecognition) {
         showToast('Speech recognition not supported in this browser', 'warning');
         return;
     }
-    
+
     recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
-    
+
     recognition.onresult = (event) => {
         let transcript = '';
         for (let i = 0; i < event.results.length; i++) {
             transcript += event.results[i][0].transcript;
         }
-        
+
         const transcriptBox = document.getElementById('transcriptBox');
         if (transcriptBox) {
-            transcriptBox.textContent = transcript || 'Listening...';
+            transcriptBox.value = transcript;
         }
     };
-    
+
     recognition.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
         if (event.error !== 'no-speech') {
-            showToast(`Speech error: ${event.error}`, 'error');
+            showToast(`Speech error: ${event.error}. You can type your answer manually.`, 'error');
+            const transcriptBox = document.getElementById('transcriptBox');
+            if (transcriptBox) {
+                transcriptBox.placeholder = "Speech recognition failed. Please type your answer here.";
+            }
         }
     };
-    
+
     recognition.onend = () => {
         if (isRecording) {
             recognition.start();
@@ -333,21 +337,31 @@ function setupEventListeners() {
     const recordBtn = document.getElementById('recordBtn');
     const submitBtn = document.getElementById('submitAnswerBtn');
     const finishBtn = document.getElementById('finishBtn');
-    
+
     if (newQuestionBtn) {
         newQuestionBtn.onclick = fetchNewQuestion;
     }
-    
+
     if (recordBtn) {
         recordBtn.onclick = toggleRecording;
     }
-    
+
     if (submitBtn) {
         submitBtn.onclick = submitAnswer;
     }
-    
+
     if (finishBtn) {
         finishBtn.onclick = finishSession;
+    }
+
+    const transcriptBox = document.getElementById('transcriptBox');
+    if (transcriptBox) {
+        transcriptBox.oninput = () => {
+            const submitBtn = document.getElementById('submitAnswerBtn');
+            if (submitBtn) {
+                submitBtn.disabled = transcriptBox.value.length < 10;
+            }
+        };
     }
 }
 
@@ -355,36 +369,37 @@ async function fetchNewQuestion() {
     try {
         const response = await fetch('/api/get_question');
         const data = await response.json();
-        
+
         if (data.success) {
             questionCount++;
             currentQuestion = data.question;
-            
+
             const questionText = document.getElementById('questionText');
             const questionNumber = document.getElementById('questionNumber');
-            
+
             if (questionText) {
                 questionText.textContent = data.question;
             }
             if (questionNumber) {
                 questionNumber.textContent = `#${questionCount}`;
             }
-            
+
             const transcriptBox = document.getElementById('transcriptBox');
             if (transcriptBox) {
-                transcriptBox.textContent = 'Your speech will appear here in real-time...';
+                transcriptBox.value = '';
+                transcriptBox.placeholder = 'Your speech will appear here in real-time... Or type your answer manually.';
             }
-            
+
             const feedbackCard = document.getElementById('feedbackCard');
             if (feedbackCard) {
                 feedbackCard.classList.add('hidden');
             }
-            
+
             const finishBtn = document.getElementById('finishBtn');
             if (finishBtn) {
                 finishBtn.disabled = false;
             }
-            
+
             showToast('New question loaded!', 'info');
         }
     } catch (error) {
@@ -406,86 +421,86 @@ function startRecording() {
         showToast('Please get a question first', 'warning');
         return;
     }
-    
+
     if (!recognition) {
         showToast('Speech recognition not available', 'error');
         return;
     }
-    
+
     isRecording = true;
     recordingSeconds = 0;
-    
+
     const recordBtn = document.getElementById('recordBtn');
     const statusIndicator = document.querySelector('.status-indicator');
     const statusMessage = document.querySelector('.status-message');
     const submitBtn = document.getElementById('submitAnswerBtn');
-    
+
     if (recordBtn) {
         recordBtn.classList.add('recording');
         recordBtn.querySelector('.record-text').textContent = 'Stop Recording';
     }
-    
+
     if (statusIndicator) {
         statusIndicator.classList.add('recording');
     }
-    
+
     if (statusMessage) {
         statusMessage.textContent = 'Recording...';
     }
-    
+
     if (submitBtn) {
         submitBtn.disabled = true;
     }
-    
+
     recognition.start();
-    
+
     recordingTimer = setInterval(() => {
         recordingSeconds++;
         updateTimer();
-        
+
         if (recordingSeconds >= 30) {
             stopRecording();
             showToast('Maximum recording time reached (30s)', 'info');
         }
     }, 1000);
-    
+
     showToast('Recording started - speak your answer', 'info');
 }
 
 function stopRecording() {
     isRecording = false;
-    
+
     if (recognition) {
         recognition.stop();
     }
-    
+
     if (recordingTimer) {
         clearInterval(recordingTimer);
     }
-    
+
     const recordBtn = document.getElementById('recordBtn');
     const statusIndicator = document.querySelector('.status-indicator');
     const statusMessage = document.querySelector('.status-message');
     const submitBtn = document.getElementById('submitAnswerBtn');
     const transcriptBox = document.getElementById('transcriptBox');
-    
+
     if (recordBtn) {
         recordBtn.classList.remove('recording');
         recordBtn.querySelector('.record-text').textContent = 'Start Recording';
     }
-    
+
     if (statusIndicator) {
         statusIndicator.classList.remove('recording');
     }
-    
+
     if (statusMessage) {
         statusMessage.textContent = 'Recording stopped';
     }
-    
-    if (submitBtn && transcriptBox && transcriptBox.textContent.length > 10) {
+
+    if (submitBtn && transcriptBox && transcriptBox.value.length > 10) {
         submitBtn.disabled = false;
     }
-    
+
     showToast('Recording stopped', 'info');
 }
 
@@ -500,21 +515,21 @@ function updateTimer() {
 
 async function submitAnswer() {
     const transcriptBox = document.getElementById('transcriptBox');
-    const answer = transcriptBox ? transcriptBox.textContent : '';
-    
-    if (!answer || answer.length < 10 || answer === 'Your speech will appear here in real-time...') {
-        showToast('Please record your answer first', 'warning');
+    const answer = transcriptBox ? transcriptBox.value : '';
+
+    if (!answer || answer.length < 10) {
+        showToast('Please provide an answer (at least 10 characters)', 'warning');
         return;
     }
-    
+
     const submitBtn = document.getElementById('submitAnswerBtn');
     const btnText = submitBtn.querySelector('.btn-text');
     const btnLoader = submitBtn.querySelector('.btn-loader');
-    
+
     btnText.textContent = 'Analyzing...';
     btnLoader.classList.remove('hidden');
     submitBtn.disabled = true;
-    
+
     try {
         const response = await fetch('/submit_answer', {
             method: 'POST',
@@ -526,9 +541,9 @@ async function submitAnswer() {
                 emotion_confidence: currentEmotionConfidence
             })
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             currentInterviewId = data.interview_id;
             displayFeedback(data);
@@ -552,29 +567,29 @@ function displayFeedback(data) {
     const feedbackText = document.getElementById('feedbackText');
     const semanticScore = document.getElementById('semanticScore');
     const voiceScore = document.getElementById('voiceScore');
-    
+
     if (feedbackCard) {
         feedbackCard.classList.remove('hidden');
     }
-    
+
     if (scoreValue) {
         scoreValue.textContent = data.score;
     }
-    
+
     if (scoreProgress) {
         const circumference = 2 * Math.PI * 45;
         scoreProgress.style.strokeDasharray = circumference;
         scoreProgress.style.strokeDashoffset = circumference - (data.score / 100) * circumference;
     }
-    
+
     if (feedbackText) {
         feedbackText.textContent = data.feedback;
     }
-    
+
     if (semanticScore) {
         semanticScore.textContent = `${data.semantic_score}%`;
     }
-    
+
     if (voiceScore) {
         voiceScore.textContent = `${data.voice_score}%`;
     }
@@ -584,6 +599,13 @@ function finishSession() {
     if (currentInterviewId) {
         window.location.href = `/results?id=${currentInterviewId}`;
     } else {
+        const transcriptBox = document.getElementById('transcriptBox');
+        if (transcriptBox && transcriptBox.value.length > 10) {
+            if (confirm("You have a recorded answer but haven't submitted it yet. Do you want to submit it first?")) {
+                submitAnswer();
+                return;
+            }
+        }
         window.location.href = '/results';
     }
 }

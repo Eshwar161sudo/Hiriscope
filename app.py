@@ -198,7 +198,18 @@ def dashboard():
         ORDER BY date DESC
         LIMIT 10
     """, (user_id,))
-    recents = cur.fetchall()
+    recents_raw = cur.fetchall()
+    
+    # Convert rows to dicts and parse dates
+    recents = []
+    for r in recents_raw:
+        item = dict(r)
+        if isinstance(item['date'], str):
+            try:
+                item['date'] = datetime.strptime(item['date'], '%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                pass # Keep as string if format doesn't match
+        recents.append(item)
 
     cur.execute("""
         SELECT *
@@ -211,7 +222,7 @@ def dashboard():
     conn.close()
 
     chart_data = {
-        "labels": [r["date"][:10] for r in recents[::-1]],
+        "labels": [r["date"].strftime('%Y-%m-%d') if isinstance(r["date"], datetime) else str(r["date"])[:10] for r in recents[::-1]],
         "scores": [r["score"] for r in recents[::-1]]
     }
 
@@ -313,8 +324,18 @@ def history():
         WHERE user_id=?
         ORDER BY date DESC
     """, (user_id,))
-    all_interviews = cur.fetchall()
+    all_interviews_raw = cur.fetchall()
     conn.close()
+    
+    all_interviews = []
+    for r in all_interviews_raw:
+        item = dict(r)
+        if isinstance(item['date'], str):
+            try:
+                item['date'] = datetime.strptime(item['date'], '%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                pass
+        all_interviews.append(item)
 
     return render_template(
         "history.html",
@@ -361,6 +382,53 @@ def upload_resume():
         "experience_years": years,
         "suggestions": suggestions
     })
+
+
+# ------------------------------------------------
+# RESULTS PAGE
+# ------------------------------------------------
+@app.route("/results")
+@login_required
+def results():
+    interview_id = request.args.get("id")
+    user_id = session["user_id"]
+    
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    if interview_id:
+        cur.execute("SELECT * FROM interviews WHERE id=? AND user_id=?", (interview_id, user_id))
+        interview_raw = cur.fetchone()
+    else:
+        # Get the most recent interview
+        cur.execute("SELECT * FROM interviews WHERE user_id=? ORDER BY date DESC LIMIT 1", (user_id,))
+        interview_raw = cur.fetchone()
+    
+    interview = None
+    if interview_raw:
+        interview = dict(interview_raw)
+        if isinstance(interview['date'], str):
+            try:
+                interview['date'] = datetime.strptime(interview['date'], '%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                pass
+
+    emotion_data = {}
+    if interview:
+        # Get emotion logs for this interview
+        cur.execute("SELECT emotion, COUNT(*) as count FROM emotion_logs WHERE interview_id=? GROUP BY emotion", (interview["id"],))
+        emotions = cur.fetchall()
+        for e in emotions:
+            emotion_data[e["emotion"]] = e["count"]
+            
+    conn.close()
+    
+    return render_template(
+        "results.html", 
+        interview=interview, 
+        emotion_data=json.dumps(emotion_data),
+        user_name=session["user_name"]
+    )
 
 
 # ------------------------------------------------
